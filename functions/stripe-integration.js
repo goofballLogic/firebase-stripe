@@ -6,7 +6,8 @@ async function processRequestAsStripeEventToCollection({
     secret,
     events,
     customers,
-    subscriptions
+    subscriptions,
+    products
 }) {
     // init
     const signature = request.headers["stripe-signature"];
@@ -41,22 +42,78 @@ async function processRequestAsStripeEventToCollection({
             }
         }, { merge: true });
         await aggregateSubscriptionEvents({ account, subscriptions });
+
     }
 
 }
 
 async function aggregateSubscriptionEvents({
+    key,
     account,
-    subscriptions
+    subscriptions,
+    products
 }) {
 
-    const ref = await subscriptions.doc(account).get();
+    const accountSubscription = subscriptions.doc(account);
+    const ref = await accountSubscription.get();
     if (!ref.exists)
         throw new Error(`Unknown account ${account}`);
     const { events } = ref.data();
-    console.log(account);
-    for (const e of Object.values(events))
-        console.log(e.type, e.data?.object?.plan);
+    const objectEvents = Object.values(events)
+        .filter(e => e.data?.object?.plan?.product)
+        .map(({
+            created,
+            data: {
+                object: {
+                    id,
+                    status,
+                    livemode,
+                    quantity,
+                    plan: {
+                        product
+                    }
+                }
+            }
+        }) => ({
+
+            id,
+            created,
+            status,
+            livemode,
+            quantity,
+            product
+
+        }))
+        .reduce((index, record) => {
+
+            const { id } = record;
+            index[id] = index[id] || record;
+            if (record.created > index[id].created) index[id] = record;
+            return index;
+
+        }, {});
+
+    const current = Object.values(objectEvents);
+    await accountSubscription.set({ current }, { merge: true });
+
+    for (const x of current) {
+        await ensureProduct({ key, product: x.product, products });
+    }
+
+}
+
+async function ensureProduct({
+    key,
+    product,
+    products
+}) {
+
+    const client = stripe(key.value());
+    const resp = await client.products.retrieve(product);
+    await products.doc(product).set(resp);
+
 }
 
 exports.processRequestAsStripeEventToCollection = processRequestAsStripeEventToCollection;
+exports.aggregateSubscriptionEvents = aggregateSubscriptionEvents;
+exports.ensureProduct = ensureProduct;
