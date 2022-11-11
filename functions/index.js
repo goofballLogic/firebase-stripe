@@ -7,23 +7,24 @@ const stripeWebhookSecret = defineSecret("STRIPE_WEBHOOK_SECRET");
 const functions = require("firebase-functions");
 const { getFirestore } = require("firebase-admin/firestore");
 const { initializeApp } = require("firebase-admin/app");
-const stripe = require("stripe");
+const { processRequestAsStripeEventToCollection } = require("./stripe-integration");
 
 // firestore
 const firestore = getFirestore(initializeApp());
+const stripeEventsCollection = firestore.collection("stripe-events");
+
+const stripeIntegrationConfig = {
+    key: stripeAPIKey,
+    secret: stripeWebhookSecret,
+    collection: stripeEventsCollection
+};
 
 exports.stripeWebhook = functions
     .runWith({ secrets: [stripeAPIKey, stripeWebhookSecret] })
     .https.onRequest(async (request, response) => {
-
-        const signature = request.headers["stripe-signature"];
-        const stripeClient = stripe(stripeAPIKey.value());
         try {
-            // verify
-            const rawBody = request.rawBody.toString();
-            const stripeEvent = await stripeClient.webhooks.constructEventAsync(rawBody, signature, stripeWebhookSecret.value());
-            // record
-            await firestore.collection("stripe-events").doc(stripeEvent.id).set(stripeEvent);
+            // process
+            await processRequestAsStripeEventToCollection({ request, ...stripeIntegrationConfig });
             // respond
             response.send("firestripe:ok");
         } catch (err) {
@@ -34,3 +35,5 @@ exports.stripeWebhook = functions
         }
 
     });
+
+
