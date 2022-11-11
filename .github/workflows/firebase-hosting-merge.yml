@@ -16,6 +16,9 @@ jobs:
           cache-dependency-path: functions/package-lock.json
           cache: "npm"
 
+      - name: Install functions dependencies
+        run: cd functions && npm install
+
       - name: Install firebase tools
         run: npm install firebase-tools -g
 
