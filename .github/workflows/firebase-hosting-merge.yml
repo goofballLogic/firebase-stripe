@@ -14,10 +14,7 @@ jobs:
         with:
           node-version: 16
           cache-dependency-path: functions/package-lock.json
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install firebase tools
         run: npm install firebase-tools -g
