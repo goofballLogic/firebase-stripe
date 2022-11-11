@@ -22,10 +22,5 @@ jobs:
       - name: Install dependencies
         run: cd functions && npm install
 
-      - name: 'Authenticate to Google Cloud'
-        uses: 'google-github-actions/auth@v0'
-        with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_FIRESTRIPE_JOJO }}
-
       - name: Deploy
-        run: firebase deploy
+        run: firebase deploy --token "${{FIREBASE_TOKEN}}"
