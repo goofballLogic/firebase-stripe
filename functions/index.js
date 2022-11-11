@@ -10,7 +10,7 @@ const { initializeApp } = require("firebase-admin/app");
 const stripe = require("stripe");
 
 // firestore
-const db = getFirestore(initializeApp());
+const firestore = getFirestore(initializeApp());
 
 exports.stripeWebhook = functions
     .runWith({ secrets: [stripeAPIKey, stripeWebhookSecret] })
@@ -23,7 +23,7 @@ exports.stripeWebhook = functions
             const rawBody = request.rawBody.toString();
             const stripeEvent = await stripeClient.webhooks.constructEventAsync(rawBody, signature, stripeWebhookSecret.value());
             // record
-            await db.collection("stripe-events").doc(stripeEvent.id).set(stripeEvent);
+            await firestore.collection("stripe-events").doc(stripeEvent.id).set(stripeEvent);
             // respond
             response.send("firestripe:ok");
         } catch (err) {
