@@ -10,7 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache-dependency-path: functions/package-lock.json
       - uses: actions/setup-node@v3
         with:
           node-version: 16
@@ -18,9 +21,6 @@ jobs:
 
       - name: Install firebase tools
         run: npm install firebase-tools -g
-
-      - name: Install dependencies
-        run: cd functions && npm install
 
       - name: Deploy
         run: firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}"
