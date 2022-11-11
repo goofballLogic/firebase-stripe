@@ -12,11 +12,16 @@ const { processRequestAsStripeEventToCollection } = require("./stripe-integratio
 // firestore
 const firestore = getFirestore(initializeApp());
 const stripeEventsCollection = firestore.collection("stripe-events");
+const stripeCustomerCollection = firestore.collection("stripe-customers");
+const stripeSubscriptionsCollection = firestore.collection("stripe-subscriptions");
 
+// stripe integration
 const stripeIntegrationConfig = {
     key: stripeAPIKey,
     secret: stripeWebhookSecret,
-    collection: stripeEventsCollection
+    events: stripeEventsCollection,
+    customers: stripeCustomerCollection,
+    subscriptions: stripeSubscriptionsCollection
 };
 
 exports.stripeWebhook = functions
@@ -26,12 +31,13 @@ exports.stripeWebhook = functions
             // process
             await processRequestAsStripeEventToCollection({ request, ...stripeIntegrationConfig });
             // respond
-            response.send("firestripe:ok");
+            response.send("stripeWebhook: Ok");
         } catch (err) {
             // warn
             functions.logger.warn(err);
             // respond
-            response.status(400).send("Invalid request");
+            const code = err.type ? 400 : 500;
+            response.status(code).send("stripeWebhook: Invalid request");
         }
 
     });

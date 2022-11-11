@@ -5,6 +5,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Firebase - Stripe integration</title>
+
+  <style>
+    body:not(.authenticated) .logged-in {
+      display: none;
+    }
+
+    body.authenticated .logged-out {
+      display: none;
+    }
+
+  </style>
 </head>
 
 <body>
@@ -12,22 +23,65 @@
   <main>
     <p>Welcome - this is the demo page for the firebase-stripe project</p>
 
-    <article id="pricing-table">
+    <article class="logged-out">
 
-      <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
-      <stripe-pricing-table pricing-table-id="prctbl_1M2dYhJo6Rioze5reCP6Q75R" client-reference-id="fish-finger"
-        customer-email="tinycode2@gmail.com"
+      <button id="sign-in">Sign in</button>
+      <script type="module">
+        const config = {
+          apiKey: "AIzaSyDsCDmNd_nOxXySkItzcqH_htRHl-KpDrQ",
+          authDomain: "firestripe-jojo.firebaseapp.com",
+          projectId: "firestripe-jojo",
+          storageBucket: "firestripe-jojo.appspot.com",
+          messagingSenderId: "252743869196",
+          appId: "1:252743869196:web:337ae4e11994e20a319f29"
+        };
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-auth.js";
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        const userMappers = {
+          ".user_displayName": u => u.displayName,
+          ".user_email": u => u.email
+        };
+        onAuthStateChanged(auth, user => {
+          document.querySelector("#sign-in").addEventListener("click", () => signInWithPopup(auth, provider));
+          const classes = document.body.classList;
+          if (user) {
+            Object.entries(userMappers).map(([selector, access]) => {
+              for (const el of document.querySelectorAll(selector))
+                el.textContent = access(user);
+            });
+            while (!classes.contains("authenticated"))
+              classes.add("authenticated");
+          } else {
+            while (classes.contains("authenticated"))
+              classes.remove("authenticated");
+          }
+          document.querySelector("stripe-pricing-table")?.setAttribute("client-reference-id", user.uid);
+
+        });
+
+
+      </script>
+
+    </article>
+    <article class="logged-in">
+
+      <aside>Welcome <span class="user_displayName"></span> (<span class="user_email"></span>)</aside>
+      <script async src=" https://js.stripe.com/v3/pricing-table.js"></script>
+      <stripe-pricing-table pricing-table-id="prctbl_1M2dYhJo6Rioze5reCP6Q75R"
         publishable-key="pk_test_51M1oxtJo6Rioze5rymaeMacmz8aoXwrbZgNkJyktGxTomK8u2VbbJghd9LtI6HAKHzQ2ufoKf3fYn9ivv0KcNGTU00P6oVhZC0">
 
       </stripe-pricing-table>
+      <footer>
+        <a
+          href="https://www.freepik.com/free-vector/tree-growth-vector-diagram-green-tree-growth-nature-leaf-growth-plant-growh-illustration_11060971.htm">
+          Images by macrovector</a> on Freepik
+      </footer>
 
     </article>
 
-    <footer>
-      <a
-        href="https://www.freepik.com/free-vector/tree-growth-vector-diagram-green-tree-growth-nature-leaf-growth-plant-growh-illustration_11060971.htm">
-        Images by macrovector</a> on Freepik
-    </footer>
   </main>
 
 </body>
