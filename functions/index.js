@@ -5,9 +5,9 @@ const stripeWebhookSecret = defineSecret("STRIPE_WEBHOOK_SECRET");
 
 // deps
 const functions = require("firebase-functions");
-const { getFirestore, deleteField } = require("firebase-admin/firestore");
+const { getFirestore } = require("firebase-admin/firestore");
 const { initializeApp } = require("firebase-admin/app");
-const { processStripeEvent, getActiveSubscriptions, replayEvents } = require("./stripe-integration");
+const { getActiveSubscriptions, replayEvents, processStripeEvent } = require("./stripe-integration");
 const { calculateEntitlements, FREE } = require("./product-entitlements");
 const readThrough = require('./read-through');
 
@@ -23,8 +23,8 @@ const stripeIntegrationConfig = {
     customers: firestore.collection("stripe-customers"), // customer -> account
     accounts: firestore.collection("stripe-accounts"), // account -> subscriptions, account -> customer, subscriptions
     products: firestore.collection("stripe-products"), // product
-    errors: firestore.collection("stripe-event-errors") // errors processing events
-
+    errors: firestore.collection("stripe-event-errors"), // errors processing events
+    logger: functions.logger
 };
 
 exports.stripeWebhook = functions
@@ -49,17 +49,14 @@ exports.fetchUserConfig = functions
     .runWith({ secrets: [stripeAPIKey, stripeWebhookSecret] })
     .https.onCall(async (data, context) => {
 
-        await replayEvents(stripeIntegrationConfig);
+        //await replayEvents({ ...stripeIntegrationConfig });
 
         const { uid, token } = (context.auth || {});
         const { email, name } = (token || {});
 
         const subs = await readThrough(
             "getActiveSubscriptions",
-            () => getActiveSubscriptions({
-                account: uid,
-                ...stripeIntegrationConfig
-            })
+            () => getActiveSubscriptions({ account: uid, ...stripeIntegrationConfig })
         );
 
         const entitlements = calculateEntitlements(subs, data?.includeTesting);
