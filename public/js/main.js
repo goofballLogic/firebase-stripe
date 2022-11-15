@@ -59,7 +59,7 @@ onAuthStateChanged(auth, async user => {
         classes.add(`license-${userConfig.license}`);
 
         document.querySelector(".user_capacity").textContent = [
-            (!userConfig.free) && `${userConfig.licenseName} license`,
+            userConfig.free ? "Free account" : `${userConfig.licenseName} license`,
             `Up to ${userConfig.widgets} widgets`,
             userConfig.seats > 1 && `${userConfig.seats} seats`,
             userConfig.teams && `Team fidgets and widgets`

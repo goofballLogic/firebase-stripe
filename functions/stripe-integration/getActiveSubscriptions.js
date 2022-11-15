@@ -2,7 +2,7 @@ const { activeSubscriptionStatuses } = require("./taxonomy");
 
 module.exports = async function getActiveSubscriptions({
 
-    account, accounts
+    account, accounts, logger
 
 }) {
 
@@ -15,6 +15,7 @@ module.exports = async function getActiveSubscriptions({
             return Object.values(data.subscriptions).filter(sub => activeSubscriptionStatuses.includes(sub.status));
 
     }
+    logger.warn("Account or subscriptions not found", { account });
     return [];
 
 };
