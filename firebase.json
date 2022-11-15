@@ -15,10 +15,7 @@
       "enabled": true
     },
     "singleProjectMode": true,
-    "auth": {
-      "port": 9099
-    },
-    "functions": {
+    "__functions": {
       "port": 5001
     }
   },
@@ -26,7 +23,7 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "functions": [
+  "__functions": [
     {
       "source": "functions",
       "codebase": "default",

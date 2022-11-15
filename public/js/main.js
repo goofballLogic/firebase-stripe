@@ -14,6 +14,8 @@ const app = initializeApp({
     appId: "1:252743869196:web:337ae4e11994e20a319f29"
 });
 
+const functions = getFunctions(app);
+
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 const userMappers = {
@@ -23,9 +25,24 @@ const userMappers = {
 
 document.querySelector("#sign-in")?.addEventListener("click", () => signInWithPopup(auth, provider));
 document.querySelector("#sign-out")?.addEventListener("click", () => signOut(auth));
-
+document.querySelector("#replay-all-events")?.addEventListener("click", e => replayEventDatabase(e));
 window.addEventListener("hashchange", identifyRoute);
 identifyRoute();
+
+async function replayEventDatabase(e) {
+
+    e.target.setAttribute("disabled", "");
+    try {
+        const result = await httpsCallable(functions, "replayEventDatabase")();
+        console.log(result);
+        alert(result?.data);
+    } catch (err) {
+        alert(err.stack);
+    } finally {
+        e.target.removeAttribute("disabled");
+    }
+
+}
 
 function identifyRoute() {
 
@@ -51,9 +68,7 @@ onAuthStateChanged(auth, async user => {
 
         document.querySelector("stripe-pricing-table")?.setAttribute("client-reference-id", user?.uid);
 
-        const functions = getFunctions(app);
-        const fetchUserConfig = httpsCallable(functions, "fetchUserConfig");
-        const { data: userConfig } = await fetchUserConfig({ includeTesting: true });
+        const { data: userConfig } = await httpsCallable(functions, "fetchUserConfig")({ includeTesting: true });
 
         Array.from(classes).filter(c => c.startsWith("license-")).forEach(l => classes.remove(l));
         classes.add(`license-${userConfig.license}`);
