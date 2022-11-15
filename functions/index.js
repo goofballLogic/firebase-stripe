@@ -29,6 +29,8 @@ const stripeIntegrationConfig = {
 
 };
 
+const isAdmin = async ({ uid }) => (await getAuth().getUser(uid))?.customClaims?.admin;
+
 // incoming webhook
 exports.stripeWebhook = functions
     .runWith({ secrets: [stripeAPIKey, stripeWebhookSecret] })
@@ -52,8 +54,7 @@ exports.replayEventDatabase = functions
     .runWith({ secrets: [stripeAPIKey, stripeWebhookSecret] })
     .https.onCall(async (_, context) => {
 
-        const user = await getAuth().getUser(context.auth?.uid);
-        if (!user.customClaims.admin)
+        if (!await isAdmin(context.auth))
             return new functions.https.HttpsError("permission-denied", "Admin only");
         const start = Date.now();
         await replayEvents({ ...stripeIntegrationConfig });
@@ -88,10 +89,13 @@ exports.fetchUserConfig = functions
 
 exports.setAdmin = functions.https.onCall(async (data, context) => {
 
+    if (!await isAdmin(context.auth))
+        return new functions.https.HttpsError("permission-denied", "Admin only");
+
     const user = await getAuth().getUserByEmail("tinycode2@gmail.com");
-    await getAuth().setCustomUserClaims(user.uid, {
-        admin: true
-    });
-    console.log(await getAuth().getUserByEmail("tinycode2@gmail.com"));
+    await getAuth().setCustomUserClaims(user.uid, { admin: true });
+    return "Ok";
 
 });
+
+
