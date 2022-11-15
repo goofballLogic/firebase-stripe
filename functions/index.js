@@ -5,25 +5,26 @@ const stripeWebhookSecret = defineSecret("STRIPE_WEBHOOK_SECRET");
 
 // deps
 const functions = require("firebase-functions");
-const { getFirestore } = require("firebase-admin/firestore");
+const { getFirestore, deleteField } = require("firebase-admin/firestore");
 const { initializeApp } = require("firebase-admin/app");
-const { processRequestAsStripeEventToCollection, aggregateSubscriptionEvents, ensureProduct } = require("./stripe-integration");
+const { processStripeEvent, getActiveSubscriptions, replayEvents } = require("./stripe-integration");
+const { calculateEntitlements, FREE } = require("./product-entitlements");
+const readThrough = require('./read-through');
 
 // firestore
 const firestore = getFirestore(initializeApp());
-const stripeEventsCollection = firestore.collection("stripe-events");
-const stripeCustomerCollection = firestore.collection("stripe-customers");
-const stripeSubscriptionsCollection = firestore.collection("stripe-subscriptions");
-const stripeProductsCollection = firestore.collection("stripe-products");
 
 // stripe integration
 const stripeIntegrationConfig = {
+
     key: stripeAPIKey,
     secret: stripeWebhookSecret,
-    events: stripeEventsCollection,
-    customers: stripeCustomerCollection,
-    subscriptions: stripeSubscriptionsCollection,
-    products: stripeProductsCollection
+    events: firestore.collection("stripe-events"),
+    customers: firestore.collection("stripe-customers"), // customer -> account
+    accounts: firestore.collection("stripe-accounts"), // account -> subscriptions, account -> customer, subscriptions
+    products: firestore.collection("stripe-products"), // product
+    errors: firestore.collection("stripe-event-errors") // errors processing events
+
 };
 
 exports.stripeWebhook = functions
@@ -31,7 +32,7 @@ exports.stripeWebhook = functions
     .https.onRequest(async (request, response) => {
         try {
             // process
-            await processRequestAsStripeEventToCollection({ request, ...stripeIntegrationConfig });
+            await processStripeEvent({ request, ...stripeIntegrationConfig });
             // respond
             response.send("stripeWebhook: Ok");
         } catch (err) {
@@ -44,19 +45,32 @@ exports.stripeWebhook = functions
 
     });
 
-exports.test = functions
+exports.fetchUserConfig = functions
     .runWith({ secrets: [stripeAPIKey, stripeWebhookSecret] })
-    .https.onRequest(async (request, response) => {
+    .https.onCall(async (data, context) => {
 
-        await aggregateSubscriptionEvents({
-            account: "5GTbxnT86XTq29cnPIHzprDMCRw2",
-            ...stripeIntegrationConfig
-        });
+        await replayEvents(stripeIntegrationConfig);
 
-        // await ensureProduct({
-        //     product: "prod_MmBmwgPOAFmMxo",
-        //     ...stripeIntegrationConfig
-        // });
-        response.send("test: ok");
+        const { uid, token } = (context.auth || {});
+        const { email, name } = (token || {});
+
+        const subs = await readThrough(
+            "getActiveSubscriptions",
+            () => getActiveSubscriptions({
+                account: uid,
+                ...stripeIntegrationConfig
+            })
+        );
+
+        const entitlements = calculateEntitlements(subs, data?.includeTesting);
+
+        return {
+            email,
+            uid,
+            name,
+            ...entitlements,
+            free: entitlements.license === FREE
+        };
 
     });
+

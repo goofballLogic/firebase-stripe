@@ -15,74 +15,67 @@
       display: none;
     }
 
+    body:not(.route-subscribe) .intent-subscribe {
+      display: none;
+    }
+
+    body:not(.license-free) .license-free {
+      display: none;
+    }
+
+    body:not(.route-account) .intent-account {
+      display: none;
+    }
   </style>
+  <script type="module" defer src="./js/main.js"></script>
+
 </head>
 
 <body>
 
   <main>
-    <p>Welcome - this is the demo page for the firebase-stripe project</p>
 
     <article class="logged-out">
 
+      <p>Welcome - this is the demo page for the firebase-stripe project</p>
       <button id="sign-in">Sign in</button>
-      <script type="module">
-        const config = {
-          apiKey: "AIzaSyDsCDmNd_nOxXySkItzcqH_htRHl-KpDrQ",
-          authDomain: "firestripe-jojo.firebaseapp.com",
-          projectId: "firestripe-jojo",
-          storageBucket: "firestripe-jojo.appspot.com",
-          messagingSenderId: "252743869196",
-          appId: "1:252743869196:web:337ae4e11994e20a319f29"
-        };
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-auth.js";
-        const app = initializeApp(config);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
-        const userMappers = {
-          ".user_displayName": u => u.displayName,
-          ".user_email": u => u.email
-        };
-        onAuthStateChanged(auth, user => {
-          document.querySelector("#sign-in").addEventListener("click", () => signInWithPopup(auth, provider));
-          const classes = document.body.classList;
-          if (user) {
-            Object.entries(userMappers).map(([selector, access]) => {
-              for (const el of document.querySelectorAll(selector))
-                el.textContent = access(user);
-            });
-            while (!classes.contains("authenticated"))
-              classes.add("authenticated");
-          } else {
-            while (classes.contains("authenticated"))
-              classes.remove("authenticated");
-          }
-          document.querySelector("stripe-pricing-table")?.setAttribute("client-reference-id", user.uid);
-
-        });
-
-
-      </script>
 
     </article>
+    <nav class="logged-in">
+
+      <a href="#">Home</a>
+      <a class="license-free" href="#route-subscribe">Subscribe</a>
+      <a href="#account">Account details</a>
+      <a href="https://billing.stripe.com/p/login/test_9AQ02n7GF3Tb3YY8ww">Billing</a>
+
+    </nav>
     <article class="logged-in">
 
-      <aside>Welcome <span class="user_displayName"></span> (<span class="user_email"></span>)</aside>
-      <script async src=" https://js.stripe.com/v3/pricing-table.js"></script>
+      <aside>Logged in as: <span class="user_displayName"></span> (<span class="user_email"></span>)</aside>
+      <button id="sign-out">Sign out</button>
+
+    </article>
+    <article class="logged-in intent-account">
+
+      Account details: <span class="user_capacity">Loading...</span>
+
+    </article>
+    <article class="logged-in intent-subscribe">
+
+      <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
       <stripe-pricing-table pricing-table-id="prctbl_1M2dYhJo6Rioze5reCP6Q75R"
         publishable-key="pk_test_51M1oxtJo6Rioze5rymaeMacmz8aoXwrbZgNkJyktGxTomK8u2VbbJghd9LtI6HAKHzQ2ufoKf3fYn9ivv0KcNGTU00P6oVhZC0">
-
       </stripe-pricing-table>
+
       <footer>
         <a
           href="https://www.freepik.com/free-vector/tree-growth-vector-diagram-green-tree-growth-nature-leaf-growth-plant-growh-illustration_11060971.htm">
           Images by macrovector</a> on Freepik
       </footer>
-
     </article>
 
   </main>
+
 
 </body>
 

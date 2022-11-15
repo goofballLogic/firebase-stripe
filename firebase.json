@@ -22,7 +22,7 @@
       "port": 5001
     }
   },
-  "firestore": {
+  "__firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
