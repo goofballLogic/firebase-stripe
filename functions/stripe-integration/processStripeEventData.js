@@ -1,5 +1,5 @@
 const stripe = require("stripe");
-const { checkoutCompleteEvent, subscriptionEvents } = require("./taxonomy");
+const { checkoutCompleteEvent, subscriptionEvents, WEEK } = require("./taxonomy");
 
 exports.processStripeEventData = async function processStripeEventData(
     stripeEvent,
