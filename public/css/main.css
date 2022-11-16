@@ -36,6 +36,7 @@ body main {
 
 body header {
     display: flex;
+    flex-wrap: wrap;
     background-color: white;
     justify-content: space-between;
     box-shadow: 0 0 10px 0 black;
