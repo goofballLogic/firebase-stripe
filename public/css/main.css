@@ -1,62 +1,76 @@
 * {
     font-family: Arial;
+    box-sizing: border-box;
 }
 
-html,
-body {
-    min-height: 100vh;
-}
-
-body {
-    position: relative;
-    font-size: 10pt;
-    margin: 0;
-    --small: 10px;
-    --medium: 20px;
-    --large: 40px;
+html {
+    height: 100%;
+    background-color: rgba(51, 132, 193);
     background-image: url(../img/background.jpg);
     background-size: cover;
     background-attachment: fixed;
+}
+
+body {
+    --small: 2px;
+    --medium: 5px;
+    --large: 10px;
+}
+
+@media only screen and (min-width: 800px) {
+    body {
+        --small: 10px;
+        --medium: 20px;
+        --large: 40px;
+    }
+}
+
+body,
+button {
+    font-size: 10pt;
+}
+
+body {
     display: flex;
+    gap: var(--small);
+    height: 100%;
+    font-size: 10pt;
+    margin: 0;
     flex-direction: column;
-    gap: var(--large);
-}
-
-body header,
-body main {
-    padding: var(--large);
 }
 
 body main {
-    background-color: white;
+    background-color: #FFF;
     min-height: 50vh;
-    max-width: 1000px;
-    width: 1000px;
-    align-self: center;
     flex: 1;
+    margin: var(--medium);
+    padding: var(--large);
 }
 
 body.route-home main,
 body:not(.authenticated) main {
     background-color: transparent;
-    font-size: 800%;
     text-shadow: 1px 1px 3px black;
-    color: white;
+    font-size: 400%;
     align-self: flex-start;
+    color: white;
+    text-align: center;
 }
 
 body header {
+    align-items: center;
     display: flex;
     flex-wrap: wrap;
     background-color: white;
     justify-content: space-between;
     box-shadow: 0 0 10px 0 black;
-    height: 2em;
+    padding: var(--medium);
+    gap: var(--large);
 }
 
 body header nav {
     display: flex;
-    gap: var(--medium);
+    gap: var(--large);
 }
 
 body header a {
@@ -69,13 +83,52 @@ a[target="_blank"]::after {
 }
 
 body>footer {
+    padding: var(--medium);
     font-size: 90%;
     background-color: white;
+    opacity: 0.7;
 }
 
 body>footer ul {
     list-style: none;
+    padding: 0;
+    margin: 0;
 }
+
+@media only screen and (max-width: 800px) {
+
+    header nav {
+        flex-wrap: wrap;
+    }
+
+    header nav a {
+        padding: 0.5em 1em;
+        box-shadow: 0 0 5px 0px silver;
+        text-align: center;
+    }
+
+    button {
+        padding: 0.5em;
+    }
+}
+
+@media only screen and (min-width: 800px) {
+
+    body.route-home main,
+    body:not(.authenticated) main {
+        font-size: 800%;
+    }
+
+    body header nav {
+        gap: var(--large);
+    }
+
+    button {
+        min-width: 50px;
+    }
+
+}
+
 
 body.authenticated .logged-out {
     display: none;

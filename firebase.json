@@ -9,21 +9,23 @@
   },
   "emulators": {
     "hosting": {
-      "port": 5000
+      "port": 5000,
+      "host": "0.0.0.0"
     },
     "ui": {
       "enabled": true
     },
     "singleProjectMode": true,
-    "__functions": {
-      "port": 5001
+    "functions": {
+      "port": 5001,
+      "host": "0.0.0.0"
     }
   },
   "__firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "__functions": [
+  "functions": [
     {
       "source": "functions",
       "codebase": "default",

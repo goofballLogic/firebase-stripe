@@ -23,10 +23,11 @@
       <a class="logged-in" href="#admin">Admin</a>
 
     </nav>
-    <div class="logged-in sign-in-status">
+    <div class="sign-in-status">
 
-      <span class="user_displayName"></span> (<span class="user_email"></span>)
-      <button id="sign-out">Sign out</button>
+      <span class="logged-in"><span class="user_displayName"></span> (<span class="user_email"></span>)</span>
+      <button class="logged-in" id="sign-out">Sign out</button>
+      <button class="logged-out" id="sign-in">Sign in</button>
 
     </div>
 
@@ -38,7 +39,10 @@
       <div class="logged-out">
         Welcome to FireStripe Inc.
       </div>
-      <button class="logged-out" id="sign-in">Sign in</button>
+      <div class="logged-in intent-home">
+        Welcome to FireStripe Inc.
+      </div>
+
 
     </article>
     <article class="logged-in intent-account">
