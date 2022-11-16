@@ -14,10 +14,12 @@ body {
     --small: 10px;
     --medium: 20px;
     --large: 40px;
-    padding-bottom: 100px;
     background-image: url(../img/background.jpg);
     background-size: cover;
     background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+    gap: var(--large);
 }
 
 body header,
@@ -26,12 +28,21 @@ body main {
 }
 
 body main {
-    margin: var(--large);
     background-color: white;
     min-height: 50vh;
     max-width: 1000px;
-    margin-left: auto;
-    margin-right: auto;
+    width: 1000px;
+    align-self: center;
+    flex: 1;
+}
+
+body.route-home main,
+body:not(.authenticated) main {
+    background-color: transparent;
+    font-size: 800%;
+    text-shadow: 1px 1px 3px black;
+    color: white;
+    align-self: flex-start;
 }
 
 body header {
@@ -59,10 +70,7 @@ a[target="_blank"]::after {
 
 body>footer {
     font-size: 90%;
-    position: absolute;
-    bottom: 0;
     background-color: white;
-    width: 100%;
 }
 
 body>footer ul {
@@ -70,6 +78,10 @@ body>footer ul {
 }
 
 body.authenticated .logged-out {
+    display: none;
+}
+
+body:not(.route-home) .intent-home {
     display: none;
 }
 

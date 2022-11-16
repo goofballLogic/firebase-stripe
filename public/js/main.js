@@ -47,10 +47,10 @@ async function replayEventDatabase(e) {
 function identifyRoute() {
 
     const route = location.hash.replace("#", "");
-    const routeClass = route ? `route-${route}` : null;
+    const routeClass = route ? `route-${route}` : "route-home";
     const classes = document.body.classList;
     Array.from(classes).filter(x => x.startsWith("route") && x !== routeClass).forEach(x => classes.remove(x));
-    if (routeClass && !classes.contains(routeClass))
+    if (!classes.contains(routeClass))
         classes.add(routeClass);
 
 }
