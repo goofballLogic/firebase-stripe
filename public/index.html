@@ -5,59 +5,46 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Firebase - Stripe integration</title>
-
-  <style>
-    body:not(.authenticated) .logged-in {
-      display: none;
-    }
-
-    body.authenticated .logged-out {
-      display: none;
-    }
-
-    body:not(.route-subscribe) .intent-subscribe {
-      display: none;
-    }
-
-    body:not(.license-free) .license-free {
-      display: none;
-    }
-
-    body:not(.route-account) .intent-account {
-      display: none;
-    }
-
-    body:not(.route-admin) .intent-admin {
-      display: none;
-    }
-  </style>
   <script type="module" defer src="./js/main.js"></script>
-
+  <link rel="stylesheet" href="./css/main.css">
 </head>
 
 <body>
 
+  <header>
+
+    <nav>
+
+      <a href="#">Home</a>
+      <a class="logged-in license-free" href="#subscribe">Upgrade to paid account</a>
+      <a class="logged-in" href="#account">Account details</a>
+      <a class="logged-in license-enterprise license-pro license-standard"
+        href="https://billing.stripe.com/p/login/test_9AQ02n7GF3Tb3YY8ww" target="_blank">Billing</a>
+      <a class="logged-in" href="#admin">Admin</a>
+
+    </nav>
+    <div class="logged-in sign-in-status">
+
+      <span class="user_displayName"></span> (<span class="user_email"></span>)
+      <button id="sign-out">Sign out</button>
+
+    </div>
+
+  </header>
   <main>
 
     <article class="logged-out">
 
-      <p>Welcome - this is the demo page for the firebase-stripe project</p>
+      <p>
+        Welcome - this is the demo page for the firebase-stripe project.
+      </p>
       <button id="sign-in">Sign in</button>
 
     </article>
-    <nav class="logged-in">
 
-      <a href="#">Home</a>
-      <a class="license-free" href="#subscribe">Upgrade to paid account</a>
-      <a href="#account">Account details</a>
-      <a href="https://billing.stripe.com/p/login/test_9AQ02n7GF3Tb3YY8ww" target="_blank">Billing</a>
-      <a href="#admin">Admin</a>
+    <article class="intent-home">
 
-    </nav>
-    <article class="logged-in">
-
-      <aside>Logged in as: <span class="user_displayName"></span> (<span class="user_email"></span>)</aside>
-      <button id="sign-out">Sign out</button>
+      Welcome to FireStripe Inc.
 
     </article>
     <article class="logged-in intent-account">
@@ -73,9 +60,7 @@
       </stripe-pricing-table>
 
       <footer>
-        <a
-          href="https://www.freepik.com/free-vector/tree-growth-vector-diagram-green-tree-growth-nature-leaf-growth-plant-growh-illustration_11060971.htm">
-          Images by macrovector</a> on Freepik
+
       </footer>
     </article>
     <article class="logged-in intent-admin">
@@ -86,6 +71,21 @@
 
   </main>
 
+  <footer>
+
+    <ul>
+      <li>Photo by <a
+          href="https://unsplash.com/@chuttersnap?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">CHUTTERSNAP</a>
+        on <a
+          href="https://unsplash.com/s/photos/commerce?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
+      </li>
+      <li><a
+          href="https://www.freepik.com/free-vector/tree-growth-vector-diagram-green-tree-growth-nature-leaf-growth-plant-growh-illustration_11060971.htm">
+          Images by macrovector</a> on Freepik
+      </li>
+      <li>&copy; Copyright FireStripe Inc. 2022</li>
+    </ul>
+  </footer>
 
 </body>
 

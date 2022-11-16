@@ -1,0 +1,92 @@
+* {
+    font-family: Arial;
+}
+
+html,
+body {
+    min-height: 100vh;
+}
+
+body {
+    position: relative;
+    font-size: 10pt;
+    margin: 0;
+    --small: 10px;
+    --medium: 20px;
+    --large: 40px;
+    padding-bottom: 100px;
+    background-image: url(../img/background.jpg);
+    background-size: 100%;
+}
+
+body header,
+body main {
+    padding: var(--large);
+}
+
+body main {
+    margin: var(--large);
+    background-color: white;
+    min-height: 50vh;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body header {
+    display: flex;
+    background-color: white;
+    justify-content: space-between;
+    box-shadow: 0 0 10px 0 black;
+    height: 2em;
+}
+
+body header nav {
+    display: flex;
+    gap: var(--medium);
+}
+
+body header a {
+    color: black !important;
+}
+
+a[target="_blank"]::after {
+    content: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVR42qXKwQkAIAxDUUdxtO6/RBQkQZvSi8I/pL4BoGw/XPkh4XigPmsUgh0626AjRsgxHTkUThsG2T/sIlzdTsp52kSS1wAAAABJRU5ErkJggg==);
+    margin: 0 3px 0 5px;
+}
+
+body>footer {
+    font-size: 90%;
+    position: absolute;
+    bottom: 0;
+    background-color: white;
+    width: 100%;
+}
+
+body>footer ul {
+    list-style: none;
+}
+
+body.authenticated .logged-out {
+    display: none;
+}
+
+body:not(.authenticated) .logged-in {
+    display: none;
+}
+
+body:not(.route-subscribe) .intent-subscribe {
+    display: none;
+}
+
+body:not(.license-free) .license-free {
+    display: none;
+}
+
+body:not(.route-account) .intent-account {
+    display: none;
+}
+
+body:not(.route-admin) .intent-admin {
+    display: none;
+}
