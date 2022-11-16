@@ -16,7 +16,8 @@ body {
     --large: 40px;
     padding-bottom: 100px;
     background-image: url(../img/background.jpg);
-    background-size: 100%;
+    background-size: cover;
+    background-attachment: fixed;
 }
 
 body header,
