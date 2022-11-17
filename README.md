@@ -1,7 +1,24 @@
 [![Deploy to Firebase Hosting on merge](https://github.com/goofballLogic/firebase-stripe/actions/workflows/firebase-hosting-merge.yml/badge.svg)](https://github.com/goofballLogic/firebase-stripe/actions/workflows/firebase-hosting-merge.yml)
 
-# Integration
-To add payment integration to your application:
+# Firebase-stripe integration
+
+The integration works by listening for `checkout.session.completed` events via a webhook which Stripe calls. This event (and only this event) contains a mapping of `customer` (customer id) to `client_reference_id`. 
+
+The integration does not assume a 1-2-1 mapping between login email and the email used during Stripe checkout. Instead, Stripe subscriptions are associated with an "account" (which you can define as 1-2-1 (single user) or 1-2-n (team of users)).
+
+**For the integration to work, you must make sure that the client_reference_id of your checkout event is account id for the resulting subscription**.
+
+One way to accomplish this is to configure the "no-code" Stripe pricing table web component's `client-reference-id` attribute with the account id:
+```html
+<script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+<stripe-pricing-table pricing-table-id="prctbl_1M2dY . . .75R" publishable-key="pk_test_51M1oxtJ. . . ZC0">
+</stripe-pricing-table>
+<script>
+    document.querySelector("stripe-pricing-table").setAttribute("client-reference-id", accountId);
+</script>
+```
+
+Steps to set up the needed Firebase functions:
 
 ### Install library
 1. Install Stripe's node library (https://www.npmjs.com/package/stripe)
