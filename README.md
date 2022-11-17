@@ -25,7 +25,16 @@ Steps to set up the needed Firebase functions:
 2. Download the single file functions code (`stripe-integration.js`) from the releases folder (https://github.com/goofballLogic/firebase-stripe/releases) and place it in your firebase functions directory.
 
 ### Configure the integration:
-    
+
+Needed API key scopes:
+ - Products (Read)
+
+Webhook events needed:
+ - checkout.session.completed
+ - customer.subscription.created
+ - customer.subscription.updated
+ - customer.subscription.deleted
+
 ```js
 // config
 const stripeAPIKey = defineSecret("STRIPE_API_KEY");
