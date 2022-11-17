@@ -111,22 +111,21 @@ exports.replayEventDatabase = functions
 ```mermaid
 sequenceDiagram
     
-    participant App
-    participant Account
-    participant Stripe
-    Account->>App: I want to buy
-    App->>Account: Go to check-out (with ref id)
-    Account->>Stripe: Check-out
-    Stripe-->>Account: OK
-    Stripe->>App: Check-out complete (with ref id, customer)
+    User->>App: I want to buy
+    App->>User: Go to check-out (with account id as client reference)
+    
+    User->>Stripe: Check-out
+    Stripe-->>User: OK
+    
+    Stripe->>App: Check-out complete (with account id as client reference, customer id)
     App->>App: Account is Customer
     Stripe-->>App: Subscription created/updated (with customer, product)
     App->>App: Subscription is Account
     App->>App: Account has Subscription id
     App->>App: Update account subscriptions
-    loop Every current subscription
-        App->>Stripe: Fetch subscription
-        Stripe-->>App: Sub
+    opt If not fresh record of product exists
+        App->>Stripe: Fetch product for subscription
+        Stripe-->>App: Product
     end
 
 ```
