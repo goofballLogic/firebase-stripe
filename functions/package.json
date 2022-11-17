@@ -6,7 +6,8 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "bundle": "rollup --format cjs ../src/index.js --file ../dist/0.1.0/stripe-integration.js; cp ../dist/0.1.0/stripe-integration.js ."
   },
   "engines": {
     "node": "16"

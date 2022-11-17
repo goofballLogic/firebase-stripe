@@ -1,6 +1,6 @@
-const { activeSubscriptionStatuses } = require("./taxonomy");
+import { activeSubscriptionStatuses } from "./taxonomy.js";
 
-module.exports = async function getActiveSubscriptions({
+export async function getActiveSubscriptions({
 
     account, accounts, logger
 

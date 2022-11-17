@@ -1,7 +1,8 @@
-const stripe = require("stripe");
-const { checkoutCompleteEvent, subscriptionEvents, WEEK } = require("./taxonomy");
+import stripe from "stripe";
 
-exports.processStripeEventData = async function processStripeEventData(
+import { checkoutCompleteEvent, subscriptionEvents, WEEK } from "./taxonomy.js";
+
+export async function processStripeEventData(
     stripeEvent,
     { customers, key, errors, accounts, products, logger }
 ) {

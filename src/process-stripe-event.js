@@ -1,7 +1,8 @@
-const stripe = require("stripe");
-const { processStripeEventData } = require("./processStripeEventData");
+import stripe from "stripe";
 
-module.exports = async function processStripeEvent({
+import { processStripeEventData } from "./process-stripe-event-data.js";
+
+export async function processStripeEvent({
 
     request, key, secret, events, customers, accounts, products, errors, logger
 

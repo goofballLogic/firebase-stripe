@@ -1,6 +1,6 @@
-const { processStripeEventData } = require("./processStripeEventData");
+import { processStripeEventData } from "./process-stripe-event-data.js";
 
-module.exports = async function replayEvents({
+export async function replayEvents({
 
     key, events, customers, errors, accounts, products, logger
 
