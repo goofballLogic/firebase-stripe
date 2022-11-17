@@ -8,12 +8,12 @@ const readThrough = require('./read-through');
 const { defineSecret } = require('firebase-functions/params');
 const { getAuth } = require("firebase-admin/auth");
 
+// firestore
+const firestore = getFirestore(initializeApp());
+
 // config
 const stripeAPIKey = defineSecret("STRIPE_API_KEY");
 const stripeWebhookSecret = defineSecret("STRIPE_WEBHOOK_SECRET");
-
-// firestore
-const firestore = getFirestore(initializeApp());
 
 // stripe integration
 const stripeIntegrationConfig = {
