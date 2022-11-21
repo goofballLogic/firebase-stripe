@@ -1,5 +1,6 @@
 import stripe from "stripe";
 import { processVerifiedStripeEvent } from "./process-stripe-event.js";
+import { checkoutCompleteEvent, subscriptionEvents } from "./taxonomy.js";
 
 export async function freshenAccountEvents({
 

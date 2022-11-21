@@ -2,9 +2,9 @@
 
 var stripe = require('stripe');
 
-const checkoutCompleteEvent = "checkout.session.completed";
+const checkoutCompleteEvent$1 = "checkout.session.completed";
 
-const subscriptionEvents = Object.freeze([
+const subscriptionEvents$1 = Object.freeze([
     "customer.subscription.created",
     "customer.subscription.updated",
     "customer.subscription.deleted"
@@ -53,7 +53,7 @@ async function recordAccountSubscriptionChange(stripeEvent, { key, customers, ac
     const account = (await customers.doc(customer).get()).data()?.account;
     if (!account) throw new Error(`Account not found for customer ${customer}`);
 
-    if (subscriptionEvents.includes(stripeEvent.type)) {
+    if (subscriptionEvents$1.includes(stripeEvent.type)) {
 
         const ref = accounts.doc(account);
         const snapshot = await ref.get();
@@ -94,7 +94,7 @@ async function recordAccountSubscriptionChange(stripeEvent, { key, customers, ac
 
 async function recordCustomerAccountMappings(stripeEvent, { customers, logger }) {
 
-    if (stripeEvent.type !== checkoutCompleteEvent) return;
+    if (stripeEvent.type !== checkoutCompleteEvent$1) return;
     const { customer, client_reference_id } = stripeEvent.data.object;
     if (customer && client_reference_id) {
 
@@ -107,13 +107,17 @@ async function recordCustomerAccountMappings(stripeEvent, { customers, logger })
 
         }
 
+    } else {
+
+        throw new Error(`Missing customer or client_reference_id. id: ${stripeEvent.id} customer: ${customer} client_reference_id: ${client_reference_id}`);
+
     }
 
 }
 
 async function ensureProductDetails(stripeEvent, { key, products, productStaleness = WEEK, logger }) {
 
-    if (!subscriptionEvents.includes(stripeEvent.type)) return;
+    if (!subscriptionEvents$1.includes(stripeEvent.type)) return;
 
     const product = stripeEvent.data.object?.plan?.product;
     if (!product)
@@ -211,10 +215,7 @@ async function getActiveSubscriptions({
 
         const data = snapshot.data();
         if ("subscriptions" in data)
-            return Object
-                .values(data.subscriptions)
-                .filter(sub => activeSubscriptionStatuses.includes(sub.status))
-                .sort((a, b) => a.eventDate - b.eventDate);
+            return Object.values(data.subscriptions).filter(sub => activeSubscriptionStatuses.includes(sub.status));
 
     }
     logger.warn("Account or subscriptions not found", { account });
@@ -252,9 +253,7 @@ async function freshenAccountEvents({
 
     } while (hasMore);
 
-    console.log(eventList[0]);
     eventList.sort((a, b) => a.created - b.created);
-    console.log(eventList[0]);
     for (const evt of eventList) {
 
         await processVerifiedStripeEvent(evt, { events, logger, customers, key, errors, accounts, products });
@@ -264,8 +263,7 @@ async function freshenAccountEvents({
 
 }
 
+exports.freshenAccountEvents = freshenAccountEvents;
 exports.getActiveSubscriptions = getActiveSubscriptions;
 exports.processStripeEvent = processStripeEvent;
 exports.replayEvents = replayEvents;
-exports.freshenAccountEvents = freshenAccountEvents;
-
