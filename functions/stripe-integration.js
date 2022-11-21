@@ -2,9 +2,9 @@
 
 var stripe = require('stripe');
 
-const checkoutCompleteEvent$1 = "checkout.session.completed";
+const checkoutCompleteEvent = "checkout.session.completed";
 
-const subscriptionEvents$1 = Object.freeze([
+const subscriptionEvents = Object.freeze([
     "customer.subscription.created",
     "customer.subscription.updated",
     "customer.subscription.deleted"
@@ -53,7 +53,7 @@ async function recordAccountSubscriptionChange(stripeEvent, { key, customers, ac
     const account = (await customers.doc(customer).get()).data()?.account;
     if (!account) throw new Error(`Account not found for customer ${customer}`);
 
-    if (subscriptionEvents$1.includes(stripeEvent.type)) {
+    if (subscriptionEvents.includes(stripeEvent.type)) {
 
         const ref = accounts.doc(account);
         const snapshot = await ref.get();
@@ -94,7 +94,7 @@ async function recordAccountSubscriptionChange(stripeEvent, { key, customers, ac
 
 async function recordCustomerAccountMappings(stripeEvent, { customers, logger }) {
 
-    if (stripeEvent.type !== checkoutCompleteEvent$1) return;
+    if (stripeEvent.type !== checkoutCompleteEvent) return;
     const { customer, client_reference_id } = stripeEvent.data.object;
     if (customer && client_reference_id) {
 
@@ -117,7 +117,7 @@ async function recordCustomerAccountMappings(stripeEvent, { customers, logger })
 
 async function ensureProductDetails(stripeEvent, { key, products, productStaleness = WEEK, logger }) {
 
-    if (!subscriptionEvents$1.includes(stripeEvent.type)) return;
+    if (!subscriptionEvents.includes(stripeEvent.type)) return;
 
     const product = stripeEvent.data.object?.plan?.product;
     if (!product)
