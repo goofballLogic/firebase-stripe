@@ -1,3 +1,4 @@
+import stripe from "stripe";
 import { processVerifiedStripeEvent } from "./process-stripe-event.js";
 
 export async function freshenAccountEvents({
@@ -30,9 +31,7 @@ export async function freshenAccountEvents({
 
     } while (hasMore);
 
-    console.log(eventList[0]);
     eventList.sort((a, b) => a.created - b.created);
-    console.log(eventList[0]);
     for (const evt of eventList) {
 
         await processVerifiedStripeEvent(evt, { events, logger, customers, key, errors, accounts, products });

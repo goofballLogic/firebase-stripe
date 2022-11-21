@@ -2,9 +2,9 @@
 
 var stripe = require('stripe');
 
-const checkoutCompleteEvent = "checkout.session.completed";
+const checkoutCompleteEvent$1 = "checkout.session.completed";
 
-const subscriptionEvents = Object.freeze([
+const subscriptionEvents$1 = Object.freeze([
     "customer.subscription.created",
     "customer.subscription.updated",
     "customer.subscription.deleted"
@@ -53,7 +53,7 @@ async function recordAccountSubscriptionChange(stripeEvent, { key, customers, ac
     const account = (await customers.doc(customer).get()).data()?.account;
     if (!account) throw new Error(`Account not found for customer ${customer}`);
 
-    if (subscriptionEvents.includes(stripeEvent.type)) {
+    if (subscriptionEvents$1.includes(stripeEvent.type)) {
 
         const ref = accounts.doc(account);
         const snapshot = await ref.get();
@@ -94,7 +94,7 @@ async function recordAccountSubscriptionChange(stripeEvent, { key, customers, ac
 
 async function recordCustomerAccountMappings(stripeEvent, { customers, logger }) {
 
-    if (stripeEvent.type !== checkoutCompleteEvent) return;
+    if (stripeEvent.type !== checkoutCompleteEvent$1) return;
     const { customer, client_reference_id } = stripeEvent.data.object;
     if (customer && client_reference_id) {
 
@@ -117,7 +117,7 @@ async function recordCustomerAccountMappings(stripeEvent, { customers, logger })
 
 async function ensureProductDetails(stripeEvent, { key, products, productStaleness = WEEK, logger }) {
 
-    if (!subscriptionEvents.includes(stripeEvent.type)) return;
+    if (!subscriptionEvents$1.includes(stripeEvent.type)) return;
 
     const product = stripeEvent.data.object?.plan?.product;
     if (!product)
@@ -153,24 +153,32 @@ async function processStripeEvent({
     logger.log("Received stripe event", { id: request.body?.id, type: request.body?.type });
 
     // verify the event
-    const stripeEvent = await buildVerifiedEvent(request, { key, secret });
+    const signature = request.headers["stripe-signature"];
+    const client = stripe(key.value());
+    const rawBody = request.rawBody.toString();
+    const stripeEvent = await client.webhooks.constructEventAsync(rawBody, signature, secret.value());
 
     // record the event
+    await processVerifiedStripeEvent(stripeEvent, {
+
+        events, logger, customers, key, errors, accounts, products
+
+    });
+
+}
+
+async function processVerifiedStripeEvent(stripeEvent, {
+
+    events, logger, customers, key, errors, accounts, products
+
+}) {
+
     const eventDocument = events.doc(stripeEvent.id);
     await eventDocument.set(stripeEvent);
     logger.debug("Recorded stripe event", { id: stripeEvent.id });
 
     // process it
     await processStripeEventData(stripeEvent, { customers, key, errors, accounts, products, logger });
-
-}
-async function buildVerifiedEvent(request, { key, secret }) {
-
-    const signature = request.headers["stripe-signature"];
-    const { webhooks } = stripe(key.value());
-    // verify and decode
-    const rawBody = request.rawBody.toString();
-    return await webhooks.constructEventAsync(rawBody, signature, secret.value());
 
 }
 
@@ -215,6 +223,47 @@ async function getActiveSubscriptions({
 
 }
 
+async function freshenAccountEvents({
+
+    account, events, logger, customers, key, errors, accounts, products
+
+}) {
+
+    logger.warn("Freshen account events requested for account", { account });
+
+    const client = stripe(key.value());
+    const eventList = [];
+    let starting_after = undefined;
+    let hasMore = false;
+    do {
+
+        logger.debug("Requesting stripe events.list", { starting_after });
+        const response = await client.events.list({
+            types: [...subscriptionEvents, checkoutCompleteEvent],
+            limit: 100,
+            starting_after
+        });
+        if (response.data) {
+
+            eventList.push(...response.data);
+            starting_after = response.data[response.data.length - 1].id;
+
+        }
+        hasMore = response.has_more;
+
+    } while (hasMore);
+
+    eventList.sort((a, b) => a.created - b.created);
+    for (const evt of eventList) {
+
+        await processVerifiedStripeEvent(evt, { events, logger, customers, key, errors, accounts, products });
+
+    }
+    logger.debug("Processing retrieved events complete");
+
+}
+
+exports.freshenAccountEvents = freshenAccountEvents;
 exports.getActiveSubscriptions = getActiveSubscriptions;
 exports.processStripeEvent = processStripeEvent;
 exports.replayEvents = replayEvents;
