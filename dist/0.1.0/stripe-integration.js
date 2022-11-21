@@ -107,6 +107,10 @@ async function recordCustomerAccountMappings(stripeEvent, { customers, logger })
 
         }
 
+    } else {
+
+        throw new Error(`Missing customer or client_reference_id. id: ${stripeEvent.id} customer: ${customer} client_reference_id: ${client_reference_id}`);
+
     }
 
 }
