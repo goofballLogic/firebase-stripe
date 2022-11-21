@@ -35,14 +35,10 @@ exports.stripeWebhook = functions
     .runWith({ secrets: [stripeAPIKey, stripeWebhookSecret] })
     .https.onRequest(async (request, response) => {
         try {
-            // process
             await processStripeEvent({ request, ...stripeIntegrationConfig });
-            // respond
             response.send("stripeWebhook: Ok");
         } catch (err) {
-            // warn
             functions.logger.warn(err);
-            // respond
             const code = err.type ? 400 : 500;
             response.status(code).send("stripeWebhook: Invalid request");
         }
@@ -69,7 +65,6 @@ exports.searchLicenses = functions
         const currentSubs = await getActiveSubscriptions({ account: uid, ...stripeIntegrationConfig });
         await freshenAccountEvents({ account: uid, ...stripeIntegrationConfig });
         const newSubs = await getActiveSubscriptions({ account: uid, ...stripeIntegrationConfig });
-
         return {
             found: newSubs.length - currentSubs.length
         };
