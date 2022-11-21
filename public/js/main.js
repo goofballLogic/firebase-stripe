@@ -26,8 +26,24 @@ const userMappers = {
 document.querySelector("#sign-in")?.addEventListener("click", () => signInWithPopup(auth, provider));
 document.querySelector("#sign-out")?.addEventListener("click", () => signOut(auth));
 document.querySelector("#replay-all-events")?.addEventListener("click", e => replayEventDatabase(e));
+document.querySelector("#search-licenses")?.addEventListener("click", e => searchLicenses(e));
+
 window.addEventListener("hashchange", identifyRoute);
 identifyRoute();
+
+async function searchLicenses(e) {
+
+    e.target.setAttribute("disabled", "");
+    try {
+        const result = await httpsCallable(functions, "searchLicenses")();
+        alert(result.data.found ? `Detected subscriptions: ${result.data.found}` : "No new subscriptions found");
+        updateUserConfig();
+    } catch (err) {
+        alert(err.stack);
+    } finally {
+        e.target.removeAttribute("disabled");
+    }
+}
 
 async function replayEventDatabase(e) {
 
@@ -36,6 +52,7 @@ async function replayEventDatabase(e) {
         const result = await httpsCallable(functions, "replayEventDatabase")();
         console.log(result);
         alert(result?.data);
+        updateUserConfig();
     } catch (err) {
         alert(err.stack);
     } finally {
@@ -68,17 +85,7 @@ onAuthStateChanged(auth, async user => {
 
         document.querySelector("stripe-pricing-table")?.setAttribute("client-reference-id", user?.uid);
 
-        const { data: userConfig } = await httpsCallable(functions, "fetchUserConfig")({ includeTesting: true });
-
-        Array.from(classes).filter(c => c.startsWith("license-")).forEach(l => classes.remove(l));
-        classes.add(`license-${userConfig.license}`);
-
-        document.querySelector(".user_capacity").textContent = [
-            userConfig.free ? "Free account" : `${userConfig.licenseName} license`,
-            `Up to ${userConfig.widgets} widgets`,
-            userConfig.seats > 1 && `${userConfig.seats} seats`,
-            userConfig.teams && `Team fidgets and widgets`
-        ].filter(x => x).join(". ");
+        await updateUserConfig();
 
     } else {
 
@@ -89,3 +96,21 @@ onAuthStateChanged(auth, async user => {
     }
 
 });
+
+async function updateUserConfig() {
+
+    const classes = document.body.classList;
+    const { data: userConfig } = await httpsCallable(functions, "fetchUserConfig")({ includeTesting: true });
+
+    Array.from(classes).filter(c => c.startsWith("license-")).forEach(l => classes.remove(l));
+    classes.add(`license-${userConfig.license}`);
+
+    document.querySelector(".user_capacity").textContent = [
+        userConfig.uid && `Account id: ${userConfig.uid}`,
+        userConfig.free ? "Free account" : `${userConfig.licenseName} license`,
+        `Up to ${userConfig.widgets} widgets`,
+        userConfig.seats > 1 && `${userConfig.seats} seats`,
+        userConfig.teams && `Team fidgets and widgets`
+    ].filter(x => x).join("\n");
+
+}

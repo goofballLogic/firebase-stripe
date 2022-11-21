@@ -149,24 +149,32 @@ async function processStripeEvent({
     logger.log("Received stripe event", { id: request.body?.id, type: request.body?.type });
 
     // verify the event
-    const stripeEvent = await buildVerifiedEvent(request, { key, secret });
+    const signature = request.headers["stripe-signature"];
+    const client = stripe(key.value());
+    const rawBody = request.rawBody.toString();
+    const stripeEvent = await client.webhooks.constructEventAsync(rawBody, signature, secret.value());
 
     // record the event
+    await processVerifiedStripeEvent(stripeEvent, {
+
+        events, logger, customers, key, errors, accounts, products
+
+    });
+
+}
+
+async function processVerifiedStripeEvent(stripeEvent, {
+
+    events, logger, customers, key, errors, accounts, products
+
+}) {
+
     const eventDocument = events.doc(stripeEvent.id);
     await eventDocument.set(stripeEvent);
     logger.debug("Recorded stripe event", { id: stripeEvent.id });
 
     // process it
     await processStripeEventData(stripeEvent, { customers, key, errors, accounts, products, logger });
-
-}
-async function buildVerifiedEvent(request, { key, secret }) {
-
-    const signature = request.headers["stripe-signature"];
-    const { webhooks } = stripe(key.value());
-    // verify and decode
-    const rawBody = request.rawBody.toString();
-    return await webhooks.constructEventAsync(rawBody, signature, secret.value());
 
 }
 
@@ -203,7 +211,10 @@ async function getActiveSubscriptions({
 
         const data = snapshot.data();
         if ("subscriptions" in data)
-            return Object.values(data.subscriptions).filter(sub => activeSubscriptionStatuses.includes(sub.status));
+            return Object
+                .values(data.subscriptions)
+                .filter(sub => activeSubscriptionStatuses.includes(sub.status))
+                .sort((a, b) => a.eventDate - b.eventDate);
 
     }
     logger.warn("Account or subscriptions not found", { account });
@@ -211,6 +222,50 @@ async function getActiveSubscriptions({
 
 }
 
+async function freshenAccountEvents({
+
+    account, events, logger, customers, key, errors, accounts, products
+
+}) {
+
+    logger.warn("Freshen account events requested for account", { account });
+
+    const client = stripe(key.value());
+    const eventList = [];
+    let starting_after = undefined;
+    let hasMore = false;
+    do {
+
+        logger.debug("Requesting stripe events.list", { starting_after });
+        const response = await client.events.list({
+            types: [...subscriptionEvents, checkoutCompleteEvent],
+            limit: 100,
+            starting_after
+        });
+        if (response.data) {
+
+            eventList.push(...response.data);
+            starting_after = response.data[response.data.length - 1].id;
+
+        }
+        hasMore = response.has_more;
+
+    } while (hasMore);
+
+    console.log(eventList[0]);
+    eventList.sort((a, b) => a.created - b.created);
+    console.log(eventList[0]);
+    for (const evt of eventList) {
+
+        await processVerifiedStripeEvent(evt, { events, logger, customers, key, errors, accounts, products });
+
+    }
+    logger.debug("Processing retrieved events complete");
+
+}
+
 exports.getActiveSubscriptions = getActiveSubscriptions;
 exports.processStripeEvent = processStripeEvent;
 exports.replayEvents = replayEvents;
+exports.freshenAccountEvents = freshenAccountEvents;
+
