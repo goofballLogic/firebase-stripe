@@ -2,9 +2,8 @@
 const functions = require("firebase-functions");
 const { getFirestore } = require("firebase-admin/firestore");
 const { initializeApp } = require("firebase-admin/app");
-const { getActiveSubscriptions, replayEvents, processStripeEvent } = require("./stripe-integration");
+const { getActiveSubscriptions, replayEvents, processStripeEvent, freshenAccountEvents } = require("./stripe-integration");
 const { calculateEntitlements, FREE } = require("./product-entitlements");
-const readThrough = require('./read-through');
 const { defineSecret } = require('firebase-functions/params');
 const { getAuth } = require("firebase-admin/auth");
 
@@ -62,6 +61,21 @@ exports.replayEventDatabase = functions
 
     });
 
+exports.searchLicenses = functions
+    .runWith({ secrets: [stripeAPIKey, stripeWebhookSecret] })
+    .https.onCall(async (_, context) => {
+
+        const { uid } = context.auth || {};
+        const currentSubs = await getActiveSubscriptions({ account: uid, ...stripeIntegrationConfig });
+        await freshenAccountEvents({ account: uid, ...stripeIntegrationConfig });
+        const newSubs = await getActiveSubscriptions({ account: uid, ...stripeIntegrationConfig });
+
+        return {
+            found: newSubs.length - currentSubs.length
+        };
+
+    });
+
 // fetch config for user
 exports.fetchUserConfig = functions
     .runWith({ secrets: [stripeAPIKey, stripeWebhookSecret] })
@@ -70,11 +84,7 @@ exports.fetchUserConfig = functions
         const { uid, token } = (context.auth || {});
         const { email, name } = (token || {});
 
-        const subs = await readThrough(
-            "getActiveSubscriptions",
-            () => getActiveSubscriptions({ account: uid, ...stripeIntegrationConfig })
-        );
-
+        const subs = await getActiveSubscriptions({ account: uid, ...stripeIntegrationConfig });
         const entitlements = calculateEntitlements(subs, data?.includeTesting);
 
         return {

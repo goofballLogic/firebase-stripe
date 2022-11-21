@@ -129,6 +129,12 @@ body>footer ul {
 
 }
 
+.user_capacity {
+    display: block;
+    white-space: pre-wrap;
+    padding: var(--small);
+}
+
 
 body.authenticated .logged-out {
     display: none;
